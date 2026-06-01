@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SO Manager">
+<title>SO Manager</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html{font-size:16px;height:100%;-webkit-text-size-adjust:100%}
+body{height:100%;background:#f2f2f7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;overflow:hidden}
+:root{
+  --bg:#f2f2f7;--surface:#fff;
+  --s2:rgba(118,118,128,.12);--s3:rgba(118,118,128,.07);
+  --border:rgba(60,60,67,.13);--b2:rgba(60,60,67,.07);
+  --text:#1c1c1e;--t2:#3a3a3c;--t3:#6d6d72;--t4:#aeaeb2;
+  --blue:#007aff;--bl:rgba(0,122,255,.1);
+  --green:#34c759;--gl:rgba(52,199,89,.12);
+  --red:#ff3b30;--rl:rgba(255,59,48,.1);
+  --orange:#ff9500;--ol:rgba(255,149,0,.1);
+  --sh:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  --hh:56px;--bh:80px;
+}
+
+/* HEADER */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:300;height:var(--hh);
+  background:rgba(242,242,247,.95);backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+}
+.header-title{font-size:17px;font-weight:700;color:var(--text)}
+.header-date{font-size:13px;color:var(--t3);font-weight:500}
+.user-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);border-radius:20px;padding:6px 12px;
+  border:none;font-family:inherit;cursor:pointer;font-size:13px;color:var(--text);
+}
+.user-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover}
+
+/* SCROLL */
+.scroll{
+  position:fixed;top:var(--hh);left:0;right:0;
+  bottom:var(--bh);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.scroll::-webkit-scrollbar{display:none}
+.content{padding:16px 16px 8px}
+
+/* BOTTOM SAVE BAR */
+.save-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  height:var(--bh);
+  background:rgba(248,248,252,.97);backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px 12px;gap:12px;
+}
+.save-btn{
+  flex:1;height:50px;border-radius:14px;
+  background:var(--blue);color:#fff;
+  font-size:17px;font-weight:600;border:none;
+  font-family:inherit;cursor:pointer;
+  transition:opacity .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.save-btn:active{opacity:.7}
+.save-btn:disabled{background:var(--t4);cursor:not-allowed}
+.save-btn.saving{background:var(--t3)}
+
+/* LOGIN SCREEN */
+.login-screen{
+  position:fixed;inset:0;z-index:500;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px;
+}
+.login-logo{font-size:48px;margin-bottom:16px}
+.login-title{font-size:28px;font-weight:700;color:var(--text);margin-bottom:8px}
+.login-sub{font-size:15px;color:var(--t3);text-align:center;margin-bottom:40px;line-height:1.5}
+.google-btn{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px 24px;
+  font-size:16px;font-weight:600;color:var(--text);
+  cursor:pointer;font-family:inherit;box-shadow:var(--sh);
+  transition:opacity .15s;
+}
+.google-btn:active{opacity:.7}
+.google-icon{width:22px;height:22px}
+
+/* CARDS */
+.card{background:var(--surface);border-radius:16px;overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
+.card-header{
+  padding:14px 16px;border-bottom:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:13px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.card-badge{font-size:13px;font-weight:600;color:var(--blue)}
+
+/* SECTION LABEL */
+.sec{font-size:13px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:18px 4px 8px}
+.sec:first-child{padding-top:2px}
+
+/* DATE SELECTOR */
+.date-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border-radius:14px;
+  padding:14px 16px;margin-bottom:12px;box-shadow:var(--sh);
+}
+.date-nav{
+  width:36px;height:36px;border-radius:50%;background:var(--s2);
+  border:none;font-size:20px;color:var(--t2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-family:inherit;flex-shrink:0;transition:all .12s;
+}
+.date-nav:active{opacity:.5}
+.date-display{flex:1;text-align:center}
+.date-main{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.date-sub{font-size:12px;color:var(--t3);margin-top:2px}
+
+/* EXPENSE ROWS */
+.exp-row{
+  display:flex;align-items:center;padding:12px 16px;
+  border-bottom:1px solid var(--b2);gap:12px;
+  transition:background .1s;
+}
+.exp-row:last-child{border-bottom:none}
+.exp-name{flex:1;font-size:16px;color:var(--text)}
+.exp-input{
+  width:110px;height:40px;border-radius:10px;
+  border:1.5px solid var(--border);
+  background:var(--s3);
+  font-size:16px;font-weight:600;color:var(--text);
+  text-align:right;padding:0 10px;
+  font-family:inherit;
+  transition:border-color .15s;
+  -webkit-appearance:none;
+}
+.exp-input:focus{outline:none;border-color:var(--blue);background:#fff}
+.exp-input.has-value{border-color:var(--green);background:var(--gl)}
+
+/* CHECKBOX */
+.checkbox{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:all .2s;
+  background:transparent;
+}
+.checkbox.checked{background:var(--green);border-color:var(--green)}
+.checkbox svg{width:14px;height:14px;opacity:0;transition:opacity .2s}
+.checkbox.checked svg{opacity:1}
+
+/* INPUT FIELDS */
+.field-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--b2);
+}
+.field-row:last-child{border-bottom:none}
+.field-label{font-size:16px;color:var(--text)}
+.field-input{
+  width:140px;height:44px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--s3);
+  font-size:16px;font-weight:600;color:var(--text);
+  text-align:right;padding:0 12px;font-family:inherit;
+  -webkit-appearance:none;transition:border-color .15s;
+}
+.field-input:focus{outline:none;border-color:var(--blue);background:#fff}
+.field-input.has-value{border-color:var(--green);background:var(--gl)}
+.field-input.wide{width:100%;text-align:left}
+
+/* ENVELOPE SECTION */
+.env-total{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;background:var(--ol);
+}
+.env-total-label{font-size:14px;font-weight:600;color:var(--orange)}
+.env-total-val{font-size:22px;font-weight:700;color:var(--orange);letter-spacing:-.5px}
+
+/* KASSA CALC */
+.kassa-calc{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b2);
+}
+.kassa-cell{background:var(--surface);padding:14px 16px}
+.kassa-cell-label{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.kassa-cell-val{font-size:20px;font-weight:700;letter-spacing:-.4px}
+.kassa-result{
+  padding:16px 16px;background:rgba(0,122,255,.05);
+  border-top:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.kassa-result-label{font-size:14px;font-weight:600;color:var(--blue)}
+.kassa-result-val{font-size:24px;font-weight:700;color:var(--blue);letter-spacing:-.5px}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:calc(var(--bh) + 12px);left:16px;right:16px;z-index:400;
+  background:#1c1c1e;color:#fff;border-radius:14px;
+  padding:14px 18px;font-size:15px;font-weight:500;text-align:center;
+  transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#1c3a1c;color:var(--green)}
+.toast.error{background:#3a1c1c;color:var(--red)}
+
+/* LOADING OVERLAY */
+.loading-overlay{
+  position:fixed;inset:0;z-index:600;
+  background:rgba(242,242,247,.85);backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.loading-overlay.hidden{display:none}
+.big-spinner{width:44px;height:44px;border:3px solid var(--s2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:16px;color:var(--t3);font-weight:500}
+
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:0 0 28px;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,0,.67,0);max-height:88vh;overflow-y:auto}
+.overlay.open .sheet{transform:translateY(0);transition:transform .32s cubic-bezier(.16,1,.3,1)}
+.handle{width:34px;height:4px;background:var(--s2);border-radius:2px;margin:12px auto 0}
+.sh-title{font-size:17px;font-weight:700;text-align:center;padding:13px 20px 0;color:var(--text)}
+.cd-wrap{display:flex;flex-direction:column;align-items:center}
+.cd{aspect-ratio:1;width:100%;max-width:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:15px;color:var(--text);cursor:pointer;border:none;background:none;font-family:inherit}
+.cd.sel{background:var(--blue)!important;color:#fff!important;font-weight:700}
+.cd.emp{visibility:hidden;pointer-events:none}
+.cd.today{font-weight:700;color:var(--blue)}
+.cal-dot{width:4px;height:4px;border-radius:50%;background:var(--blue);margin:1px auto 0}
+.cdl{text-align:center;font-size:10px;font-weight:600;color:var(--t4);padding:3px 0 6px;text-transform:uppercase}
+
+/* DESKTOP */
+@media(min-width:1024px){
+  .content{max-width:600px;margin:0 auto}
+  .save-bar{justify-content:center}
+  .save-btn{max-width:400px}
+}
+</style>
+</head>
+<body>
+
+<!-- ▼ КОНФИГ — вставь свои данные -->
+<script>
+const CLIENT_ID = '391041536918-vtsup72h2pml08kqogbk6d8agjdquork.apps.googleusercontent.com';
+const SHEET_ID  = '1B485QDsOHIkGRDz5_ljOO2k98g64Y32ANtPo7U6KNSU';
+const API_KEY   = 'AIzaSyAjGIIL0E1yvT3vaAhofI0NElS5q-oi86g';
+
+// Список сотрудников (должен совпадать с таблицей)
+const EMPLOYEES = [
+  'Рахим Гасанов','Эмилия Мустафазаде','Алима Серик',
+  'Рената Марошан','Неля Николенко','Дарья Плиусина',
+  'Юрий Куриляк','Максим Кожухар','Ересыл Адилхан',
+  'Артем Гармаш','Женел Неретин','Владимир Кот',
+  'Эльмар Максудов','Виталий Овсянников','Оксана Плиусина',
+  'Экстра'
+];
+
+// Другие расходы (строки ниже сотрудников в блоке дня)
+const OTHER_EXPENSES = [
+  'Конверт оф','Мойка','Магазин','Уборка Офиса',
+  'DJ','Олег','Бензин','Метро','Ремонт','Табак',
+  'Николай','Уборка ресторана','Артем'
+];
+
+// Строки блоков кассы и конверта (0-indexed)
+const CFG = {
+  ENVELOPE: {colDate:5, colIncome:6, colExpense:8, colReason:9, colTotal:10, rowStart:174, rowEnd:212},
+  KASSA:    {colDate:13, colIn:14, colIncome:16, colExpense:17, colBalance:18, rowStart:174, rowEnd:212},
+};
+</script>
+<!-- ▲ -->
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-logo">📊</div>
+  <div class="login-title">SO Manager</div>
+  <div class="login-sub">Приложение для заполнения\nежедневных расходов</div>
+  <button class="google-btn" onclick="signIn()">
+    <svg class="google-icon" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Войти через Google
+  </button>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="big-spinner"></div>
+  <div class="loading-text" id="loadingText">Загрузка...</div>
+</div>
+
+<!-- HEADER -->
+<div class="header" id="mainHeader" style="display:none">
+  <div>
+    <div class="header-title">SO Manager</div>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+  <button class="user-btn" onclick="signOut()" id="userBtn">
+    <img class="user-avatar" id="userAvatar" src="" alt="">
+    <span id="userName"></span>
+  </button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="scroll" id="mainScroll" style="display:none">
+  <div class="content" id="mainContent">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="saveBar" style="display:none">
+  <button class="save-btn" id="saveBtn" onclick="saveData()">
+    💾 Сохранить смену
+  </button>
+</div>
+
+<!-- CALENDAR MODAL -->
+<div class="overlay" id="calModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title">Выбор дня</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 8px">
+      <div id="calLbl" style="font-size:17px;font-weight:700;color:var(--text)"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="calGo(-1)" style="width:30px;height:30px;border-radius:50%;background:var(--s2);border:none;font-size:16px;color:var(--t2);cursor:pointer;font-family:inherit">‹</button>
+        <button onclick="calGo(1)"  style="width:30px;height:30px;border-radius:50%;background:var(--s2);border:none;font-size:16px;color:var(--t2);cursor:pointer;font-family:inherit">›</button>
+      </div>
+    </div>
+    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 10px 16px"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────
+let accessToken = null;
+let currentDate = new Date();
+let sheetName = '';
+let expenses = {}; // {name: {sum, checked}}
+let otherExp = {}; // {name: sum}
+let envelopeExpense = 0;
+let envelopeReason = '';
+let kassaIncome = 0;
+let kassaOpen = 0;
+let isFirstDay = false;
+let sheetData = null; // cached sheet data
+
+const MRU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const DOW = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+// ── AUTH ──────────────────────────────────────────
+function signIn(){
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile',
+    callback: async (resp) => {
+      if(resp.error) { showToast('Ошибка входа: ' + resp.error, 'error'); return; }
+      accessToken = resp.access_token;
+      // Save token expiry time
+      try{ localStorage.setItem('so_token_exp', Date.now() + (resp.expires_in||3600)*1000); }catch(e){}
+      // Get user info
+      const ui = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {Authorization: 'Bearer ' + accessToken}
+      }).then(r=>r.json());
+      g('userAvatar').src = ui.picture || '';
+      g('userName').textContent = ui.given_name || 'Пользователь';
+      showApp();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function signOut(){
+  accessToken = null;
+  g('loginScreen').style.display = 'flex';
+  g('mainHeader').style.display = 'none';
+  g('mainScroll').style.display = 'none';
+  g('saveBar').style.display = 'none';
+}
+
+function tryAutoSignIn(){
+  // Try silent sign-in if token might still be valid
+  try{
+    const exp = parseInt(localStorage.getItem('so_token_exp')||'0');
+    if(exp > Date.now() + 60000){ // still valid for >1 min
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile',
+        prompt: '', // empty = silent, no popup
+        callback: async (resp) => {
+          if(resp.error || !resp.access_token) return;
+          accessToken = resp.access_token;
+          try{ localStorage.setItem('so_token_exp', Date.now() + (resp.expires_in||3600)*1000); }catch(e){}
+          const ui = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+accessToken}}).then(r=>r.json());
+          g('userAvatar').src = ui.picture||'';
+          g('userName').textContent = ui.given_name||'Пользователь';
+          showApp();
+        }
+      });
+      client.requestAccessToken({prompt:''});
+    }
+  }catch(e){}
+}
+
+function showApp(){
+  g('loginScreen').style.display = 'none';
+  g('mainHeader').style.display = 'flex';
+  g('mainScroll').style.display = 'block';
+  g('saveBar').style.display = 'flex';
+  // Set to today
+  currentDate = new Date();
+  initState();
+  loadSheetAndRender();
+}
+
+// ── INIT STATE ────────────────────────────────────
+function initState(){
+  expenses = {};
+  EMPLOYEES.forEach(n => expenses[n] = {sum:'', checked:false});
+  otherExp = {};
+  OTHER_EXPENSES.forEach(n => otherExp[n] = '');
+  envelopeExpense = '';
+  envelopeReason = '';
+  kassaIncome = '';
+  kassaOpen = '';
+
+  const d = currentDate;
+  sheetName = getSheetName(d);
+  isFirstDay = d.getDate() === 1;
+
+  g('headerDate').textContent = formatDate(d);
+  updateDateDisplay();
+}
+
+function getSheetName(d){
+  return MRU[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function formatDate(d){
+  return String(d.getDate()).padStart(2,'0') + '.' +
+         String(d.getMonth()+1).padStart(2,'0') + '.' +
+         d.getFullYear();
+}
+
+function updateDateDisplay(){
+  const d = currentDate;
+  if(g('dateMain')) g('dateMain').textContent = formatDate(d);
+  if(g('dateSub'))  g('dateSub').textContent  = DOW[d.getDay()];
+  g('headerDate').textContent = formatDate(d);
+}
+
+// ── LOAD SHEET ────────────────────────────────────
+async function loadSheetAndRender(){
+  showLoading('Загружаем данные...');
+  try {
+    const sn = getSheetName(currentDate);
+    const range = encodeURIComponent("'" + sn + "'");
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE`;
+    const res = await fetch(url);
+    const data = await res.json();
+    sheetData = data.values || [];
+
+    // Auto-fill kassa open for 1st day of month from previous month's last kassa value
+    if(isFirstDay && !kassaOpen){
+      await autoFillKassaOpen();
+    }
+
+    hideLoading();
+    renderForm();
+  } catch(e) {
+    hideLoading();
+    showToast('Ошибка загрузки: ' + e.message, 'error');
+    renderForm();
+  }
+}
+
+async function autoFillKassaOpen(){
+  try {
+    // Get previous month sheet name
+    const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    const prevSn = getSheetName(prevDate);
+
+    // Check if prev month sheet exists
+    const sheetsRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}&fields=sheets.properties.title`
+    );
+    const sheetsData = await sheetsRes.json();
+    const sheetNames = (sheetsData.sheets || []).map(s => s.properties.title);
+    
+    if(!sheetNames.includes(prevSn)) return; // prev month sheet doesn't exist
+
+    // Load prev month data
+    const prevRange = encodeURIComponent("'" + prevSn + "'");
+    const prevUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${prevRange}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE`;
+    const prevRes = await fetch(prevUrl);
+    const prevData = await prevRes.json();
+    const prevRows = prevData.values || [];
+
+    // Find last non-empty kassa balance value
+    const {colDate, colBalance, rowStart, rowEnd} = CFG.KASSA;
+    let lastBalance = null;
+    // Search from bottom up - find last row WITH a date
+    for(let r = Math.min(rowEnd, prevRows.length - 1); r >= rowStart; r--){
+      const dateVal = (prevRows[r] || [])[colDate];
+      if(!dateVal && dateVal !== 0) continue;
+      const dateStr2 = serialToDate(dateVal);
+      if(!dateStr2) continue;
+      // Found a row with valid date - get its balance (formula result)
+      const val = (prevRows[r] || [])[colBalance];
+      if(val !== undefined && val !== null && val !== ''){
+        lastBalance = val;
+        console.log('Last kassa row', r+1, 'date:', dateStr2, 'balance:', val);
+        break;
+      }
+    }
+
+    if(lastBalance !== null){
+      // Round to 2 decimal places to fix floating point issue
+      kassaOpen = Math.round(parseFloat(lastBalance) * 100) / 100;
+      showToast('💰 Вход: €' + fv(kassaOpen) + ' из «' + prevSn + '»', 'success');
+      // Force re-render to show the value
+      setTimeout(renderForm, 100);
+    }
+  } catch(e) {
+    console.log('Could not load prev month kassa:', e.message);
+  }
+}
+
+// ── FIND DAY BLOCK ────────────────────────────────
+function findDayBlock(rows, dateStr){
+  // Find header row containing this date
+  const dateRx = /\d{2}\.\d{2}\.\d{4}/;
+  for(let r = 0; r < rows.length; r++){
+    for(let c = 0; c < (rows[r]||[]).length; c++){
+      const cell = String(rows[r][c]||'');
+      if(dateRx.test(cell) && cell.includes(dateStr)){
+        return {row: r, col: c};
+      }
+    }
+  }
+  // Not found by regex - try serial number approach in header rows
+  // Day block headers are typically in first ~140 rows
+  return null;
+}
+
+// ── RENDER FORM ───────────────────────────────────
+function renderForm(){
+  const dateStr = formatDate(currentDate);
+  const block = sheetData ? findDayBlock(sheetData, dateStr) : null;
+
+  // Pre-fill from existing data if found
+  if(block && sheetData){
+    const {row, col} = block;
+    const allNames = [...EMPLOYEES, ...OTHER_EXPENSES];
+    // Scan enough rows to cover all names
+    for(let dr = row+2; dr < Math.min(row+2+allNames.length+10, sheetData.length); dr++){
+      const name = String((sheetData[dr]||[])[col]||'').trim();
+      const sum  = (sheetData[dr]||[])[col+1];
+      const chk  = (sheetData[dr]||[])[col+2];
+      if(!name) continue;
+      if(name.toLowerCase().includes('итого')) break;
+      if(EMPLOYEES.includes(name)){
+        const s = (sum !== undefined && sum !== '') ? sum : '';
+        const c = chk===true||chk===1||chk==='TRUE'||chk==='true';
+        expenses[name] = {sum: s, checked: c};
+      } else if(OTHER_EXPENSES.includes(name)){
+        otherExp[name] = (sum !== undefined && sum !== '') ? sum : '';
+      }
+    }
+  }
+
+  // Get kassa data for this day and pre-fill if exists
+  let kassaRow = null;
+  let envelopeRow = null;
+  if(sheetData){
+    // Load kassa
+    const {colDate, colIn, colIncome, colExpense, colBalance, rowStart, rowEnd} = CFG.KASSA;
+    for(let r = rowStart; r <= rowEnd; r++){
+      const raw = (sheetData[r]||[])[colDate];
+      if(!raw && raw !== 0) continue;
+      const cellDate = serialToDate(raw);
+      if(cellDate === dateStr){
+        kassaRow = r;
+        const existOpen   = (sheetData[r]||[])[colIn];
+        const existIncome = (sheetData[r]||[])[colIncome];
+        if(existOpen   !== undefined && existOpen   !== '' && existOpen   !== 0) kassaOpen   = existOpen;
+        if(existIncome !== undefined && existIncome !== '' && existIncome !== 0) kassaIncome = existIncome;
+        break;
+      }
+    }
+    // Load envelope
+    const {colDate:ecd, colIncome:eInc, colExpense:eExp, colReason:eReas, colTotal:eTotal, rowStart:ers, rowEnd:ere} = CFG.ENVELOPE;
+    let prevEnvTotal = 0;
+    for(let r = ers; r <= ere; r++){
+      const raw = (sheetData[r]||[])[ecd];
+      if(!raw && raw !== 0) continue;
+      const cellDate = serialToDate(raw);
+      if(cellDate === dateStr){
+        envelopeRow = r;
+        const existExp    = (sheetData[r]||[])[eExp];
+        const existReason = (sheetData[r]||[])[eReas];
+        if(existExp    !== undefined && existExp    !== '' && existExp    !== 0) envelopeExpense = existExp;
+        if(existReason !== undefined && existReason !== '') envelopeReason = existReason;
+      } else if(envelopeRow === null){
+        // Accumulate previous day total
+        const tot = (sheetData[r]||[])[eTotal];
+        if(tot !== undefined && tot !== '' && parseFloat(tot) > 0) prevEnvTotal = parseFloat(String(tot).replace(',','.'));
+      }
+    }
+  }
+
+  // Calculate envelope total from checked items
+  const envFromChecked = EMPLOYEES
+    .filter(n => expenses[n].checked && expenses[n].sum)
+    .reduce((s,n) => s + parseFloat(String(expenses[n].sum).replace(',','.')||'0'), 0);
+  const prevEnvTotalVal = (typeof prevEnvTotal !== 'undefined') ? prevEnvTotal : 0;
+
+  // Build HTML
+  let html = '';
+
+  // DATE SELECTOR
+  html += `
+  <div class="date-row">
+    <button class="date-nav" onclick="changeDate(-1)">‹</button>
+    <div class="date-display" onclick="openCalendar()" style="cursor:pointer">
+      <div class="date-main" id="dateMain">${dateStr}</div>
+      <div class="date-sub" id="dateSub" style="color:var(--blue)">${DOW[currentDate.getDay()]} · выбрать ↑</div>
+    </div>
+    <button class="date-nav" onclick="changeDate(1)">›</button>
+  </div>`;
+
+  // EMPLOYEES
+  html += `<div class="sec">Зарплаты сотрудников</div>
+  <div class="card">`;
+  EMPLOYEES.forEach(name => {
+    const e = expenses[name];
+    const hasVal = e.sum !== '' && e.sum !== 0;
+    html += `
+    <div class="exp-row">
+      <div class="exp-name">${esc(name)}</div>
+      <input class="exp-input${hasVal?' has-value':''}" type="number" inputmode="decimal"
+        placeholder="€ 0"
+        value="${e.sum||''}"
+        onchange="updateExp('${esc(name)}','sum',this.value)"
+        oninput="this.classList.toggle('has-value',this.value!='')">
+      <div class="checkbox${e.checked?' checked':''}" onclick="toggleCheck('${esc(name)}')">
+        <svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.5"><path d="m2 7 3.5 3.5L12 3"/></svg>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // OTHER EXPENSES
+  html += `<div class="sec">Другие расходы</div>
+  <div class="card">`;
+  OTHER_EXPENSES.forEach(name => {
+    const val = otherExp[name];
+    const hasVal = val !== '' && val !== 0;
+    html += `
+    <div class="exp-row">
+      <div class="exp-name">${esc(name)}</div>
+      <input class="exp-input${hasVal?' has-value':''}" type="number" inputmode="decimal"
+        placeholder="€ 0"
+        value="${val||''}"
+        onchange="updateOther('${esc(name)}',this.value)"
+        oninput="this.classList.toggle('has-value',this.value!='')">
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ENVELOPE
+  const envExpVal = envelopeExpense||'';
+  const envReasonVal = envelopeReason||'';
+  const envTotal = envFromChecked - parseFloat(String(envelopeExpense||0).replace(',','.'));
+
+  html += `<div class="sec">Конверт</div>
+  <div class="card">
+    Приход (из флажков)</div>
+      <div style="font-size:18px;font-weight:700;color:var(--green)">€${fv(envFromChecked)}</div>
+    </div>
+    <div class="field-row">
+      <div class="field-label">Расход из конверта</div>
+      <input class="field-input${envExpVal?' has-value':''}" type="number" inputmode="decimal"
+        placeholder="€ 0" value="${envExpVal}"
+        data-field="envExpense"
+        onchange="envelopeExpense=this.value;updateEnvTotal()"
+        oninput="this.classList.toggle('has-value',this.value!='');envelopeExpense=this.value;updateEnvTotal()">
+    </div>
+    <div class="field-row" style="border-bottom:1px solid var(--b2)">
+      <div class="field-label">Причина расхода</div>
+    </div>
+    <div style="padding:10px 16px 14px">
+      <input class="field-input wide" type="text" placeholder="Опишите причину..."
+        value="${esc(envReasonVal)}"
+        data-field="envReason"
+        onchange="envelopeReason=this.value"
+        oninput="envelopeReason=this.value">
+    </div>
+    <div class="env-total">
+      <div class="env-total-label">Итог конверта</div>
+      <div class="env-total-val" id="envTotalVal">€${fv(envTotal)}</div>
+    </div>
+  </div>`;
+
+  // KASSA
+  const kassaExpense = calcTotalExpense();
+  const kassaBalance = parseFloat(String(kassaOpen||0).replace(',','.')) +
+                       parseFloat(String(kassaIncome||0).replace(',','.')) -
+                       kassaExpense;
+
+  html += `<div class="sec">Касса</div>
+  <div class="card">`;
+
+  if(isFirstDay){
+    html += `
+    <div class="field-row">
+      <div class="field-label">Входная сумма</div>
+      <input class="field-input${kassaOpen?' has-value':''}" type="number" inputmode="decimal"
+        placeholder="€ 0" value="${kassaOpen||''}"
+        data-field="kassaOpen"
+        onchange="kassaOpen=this.value;updateKassa()"
+        oninput="this.classList.toggle('has-value',this.value!='');kassaOpen=this.value;updateKassa()">
+    </div>`;
+  }
+
+  html += `
+    <div class="field-row">
+      <div class="field-label">Доход за день</div>
+      <input class="field-input${kassaIncome?' has-value':''}" type="number" inputmode="decimal"
+        placeholder="€ 0" value="${kassaIncome||''}"
+        data-field="kassaIncome"
+        onchange="kassaIncome=this.value;updateKassa()"
+        oninput="this.classList.toggle('has-value',this.value!='');kassaIncome=this.value;updateKassa()">
+    </div>
+    <div class="kassa-calc">
+      <div class="kassa-cell">
+        <div class="kassa-cell-label">Вход</div>
+        <div class="kassa-cell-val bl" id="kassaOpenVal">€${fv(kassaOpen||0)}</div>
+      </div>
+      <div class="kassa-cell">
+        <div class="kassa-cell-label">Доход</div>
+        <div class="kassa-cell-val gr" id="kassaIncomeVal">€${fv(kassaIncome||0)}</div>
+      </div>
+      <div class="kassa-cell">
+        <div class="kassa-cell-label">Расход</div>
+        <div class="kassa-cell-val rd" id="kassaExpVal">€${fv(kassaExpense)}</div>
+      </div>
+      <div class="kassa-cell">
+        <div class="kassa-cell-label">Остаток</div>
+        <div class="kassa-cell-val bl" id="kassaBalVal">€${fv(kassaBalance)}</div>
+      </div>
+    </div>
+    <div class="kassa-result">
+      <div class="kassa-result-label">Касса на конец смены</div>
+      <div class="kassa-result-val" id="kassaResultVal">€${fv(kassaBalance)}</div>
+    </div>
+  </div>`;
+
+  // BOTTOM SPACE
+  html += '<div style="height:8px"></div>';
+
+  g('mainContent').innerHTML = html;
+}
+
+// ── UPDATE FUNCTIONS ──────────────────────────────
+function updateExp(name, field, val){
+  if(expenses[name]) expenses[name][field] = val;
+  updateEnvTotal();
+  updateKassa();
+}
+
+function updateOther(name, val){
+  otherExp[name] = val;
+  updateKassa();
+}
+
+function toggleCheck(name){
+  if(expenses[name]){
+    expenses[name].checked = !expenses[name].checked;
+    const row = event.currentTarget || event.target;
+    row.classList.toggle('checked');
+    updateEnvTotal();
+  }
+}
+
+function updateEnvTotal(){
+  const fromChecked = EMPLOYEES
+    .filter(n => expenses[n].checked && expenses[n].sum)
+    .reduce((s,n) => s + parseFloat(String(expenses[n].sum).replace(',','.')||'0'), 0);
+  const exp = parseFloat(String(envelopeExpense||0).replace(',','.'));
+  const total = fromChecked - exp;
+  if(g('envTotalVal')) g('envTotalVal').textContent = '€' + fv(total);
+}
+
+function calcTotalExpense(){
+  const empExp = EMPLOYEES.reduce((s,n) => s + parseFloat(String(expenses[n].sum||0).replace(',','.')), 0);
+  const othExp = OTHER_EXPENSES.reduce((s,n) => s + parseFloat(String(otherExp[n]||0).replace(',','.')), 0);
+  return empExp + othExp;
+}
+
+function updateKassa(){
+  const exp = calcTotalExpense();
+  const open = parseFloat(String(kassaOpen||0).replace(',','.'));
+  const inc  = parseFloat(String(kassaIncome||0).replace(',','.'));
+  const bal  = open + inc - exp;
+  if(g('kassaExpVal'))    g('kassaExpVal').textContent    = '€' + fv(exp);
+  if(g('kassaOpenVal'))   g('kassaOpenVal').textContent   = '€' + fv(open);
+  if(g('kassaIncomeVal')) g('kassaIncomeVal').textContent = '€' + fv(inc);
+  if(g('kassaBalVal'))    g('kassaBalVal').textContent    = '€' + fv(bal);
+  if(g('kassaResultVal')) g('kassaResultVal').textContent = '€' + fv(bal);
+}
+
+// ── DATE NAVIGATION ───────────────────────────────
+function changeDate(dir){
+  const d = new Date(currentDate);
+  d.setDate(d.getDate() + dir);
+  currentDate = d;
+  initState();
+  loadSheetAndRender();
+}
+
+// ── SAVE DATA ─────────────────────────────────────
+async function saveData(){
+  if(!accessToken){ showToast('Нужно войти в аккаунт', 'error'); return; }
+
+  const btn = g('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Сохраняем...';
+
+  try {
+    const dateStr = formatDate(currentDate);
+    const sn = getSheetName(currentDate);
+
+    // Reload fresh data to find row positions
+    showLoading('Сохраняем...');
+    const range = encodeURIComponent("'" + sn + "'");
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const rows = data.values || [];
+
+    // Find day block
+    const block = findDayBlock(rows, dateStr);
+    if(!block){ throw new Error('Не нашёл блок для даты ' + dateStr); }
+
+    const {row: blockRow, col: blockCol} = block;
+    const updates = [];
+
+    // Write employee expenses
+    const allNames = [...EMPLOYEES, ...OTHER_EXPENSES];
+    for(let dr = blockRow+2; dr < blockRow+2+allNames.length+5 && dr < rows.length; dr++){
+      const name = String((rows[dr]||[])[blockCol]||'').trim();
+      if(EMPLOYEES.includes(name)){
+        const e = expenses[name];
+        const sum = parseFloat(String(e.sum||0).replace(',','.')) || 0;
+        const chk = e.checked ? true : false;
+        // Sum column (col+1), checkbox column (col+2)
+        updates.push({range:`'${sn}'!${colLetter(blockCol+1)}${dr+1}`, values:[[sum]]});
+        updates.push({range:`'${sn}'!${colLetter(blockCol+2)}${dr+1}`, values:[[chk]]});
+      } else if(OTHER_EXPENSES.includes(name)){
+        const sum = parseFloat(String(otherExp[name]||0).replace(',','.')) || 0;
+        updates.push({range:`'${sn}'!${colLetter(blockCol+1)}${dr+1}`, values:[[sum]]});
+      }
+    }
+
+    // Write envelope row
+    const {colDate:eColDate, colIncome:eColInc, colExpense:eColExp, colReason:eColReason, rowStart:eStart, rowEnd:eEnd} = CFG.ENVELOPE;
+    let envFound = false;
+    for(let r = eStart; r <= eEnd; r++){
+      const raw = (rows[r]||[])[eColDate];
+      if(!raw && raw !== 0) continue;
+      const cellDate = serialToDate(raw);
+      if(cellDate === dateStr){
+        envFound = true;
+        const envIncome = EMPLOYEES
+          .filter(n => expenses[n].checked && expenses[n].sum)
+          .reduce((s,n) => s + parseFloat(String(expenses[n].sum).replace(',','.')||'0'), 0);
+        // Read directly from DOM to avoid stale variable issue
+        const envExpInput = document.querySelector('input[data-field="envExpense"]');
+        const envReasonInput = document.querySelector('input[data-field="envReason"]');
+        const envExp = envExpInput ? parseFloat(envExpInput.value||'0') : parseFloat(String(envelopeExpense||0).replace(',','.'));
+        const envReason = envReasonInput ? envReasonInput.value.trim() : String(envelopeReason||'').trim();
+        updates.push({range:`'${sn}'!${colLetter(eColInc)}${r+1}`, values:[[envIncome||0]]});
+        if(!isNaN(envExp) && envExp > 0)
+          updates.push({range:`'${sn}'!${colLetter(eColExp)}${r+1}`, values:[[envExp]]});
+        if(envReason)
+          updates.push({range:`'${sn}'!${colLetter(eColReason)}${r+1}`, values:[[envReason]]});
+        break;
+      }
+    }
+    if(!envFound) showToast('⚠️ Строка конверта не найдена для ' + dateStr, 'error');
+
+    // Write kassa row
+    const {colDate:kColDate, colIn:kColIn, colIncome:kColInc, rowStart:kStart, rowEnd:kEnd} = CFG.KASSA;
+    for(let r = kStart; r <= kEnd; r++){
+      const raw2 = (rows[r]||[])[kColDate];
+      if(!raw2 && raw2 !== 0) continue;
+      if(serialToDate(raw2) === dateStr){
+        // kassa open handled below
+        // Read kassa income from DOM
+        const kassaIncomeInput = document.querySelector('input[data-field="kassaIncome"]');
+        const kassaIncomeVal = kassaIncomeInput ? parseFloat(kassaIncomeInput.value||'0') : parseFloat(String(kassaIncome||0).replace(',','.'));
+        const kassaOpenInput = document.querySelector('input[data-field="kassaOpen"]');
+        const kassaOpenVal2 = kassaOpenInput ? parseFloat(kassaOpenInput.value||'0') : parseFloat(String(kassaOpen||0).replace(',','.'));
+        if(kassaIncomeVal > 0)
+          updates.push({range:`'${sn}'!${colLetter(kColInc)}${r+1}`, values:[[kassaIncomeVal]]});
+        if(isFirstDay && kassaOpenVal2 > 0)
+          updates.push({range:`'${sn}'!${colLetter(kColIn)}${r+1}`, values:[[kassaOpenVal2]]});
+        break;
+      }
+    }
+
+    // Batch update
+    if(updates.length > 0){
+      const batchRes = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
+        {
+          method:'POST',
+          headers:{
+            'Authorization':'Bearer ' + accessToken,
+            'Content-Type':'application/json'
+          },
+          body: JSON.stringify({
+            valueInputOption:'USER_ENTERED',
+            data: updates
+          })
+        }
+      );
+      const batchData = await batchRes.json();
+      if(batchData.error) throw new Error(batchData.error.message);
+    }
+
+    hideLoading();
+    showToast('✅ Смена сохранена!', 'success');
+
+  } catch(e) {
+    hideLoading();
+    showToast('❌ Ошибка: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Сохранить смену';
+  }
+}
+
+// ── CALENDAR ─────────────────────────────────────
+let calView = new Date();
+const MRU_CAL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const DOW_CAL = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+function openCalendar(){
+  calView = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  renderCal();
+  document.getElementById('calModal').classList.add('open');
+}
+function calGo(d){ calView.setMonth(calView.getMonth()+d); renderCal(); }
+function renderCal(){
+  const yr=calView.getFullYear(), mo=calView.getMonth();
+  document.getElementById('calLbl').textContent = MRU_CAL[mo]+' '+yr;
+  const today = formatDate(new Date());
+  const sel = formatDate(currentDate);
+  const dow_ru = DOW_CAL;
+  let h = dow_ru.map(d=>`<div class="cdl">${d}</div>`).join('');
+  let first = new Date(yr,mo,1).getDay(); if(first===0)first=7;
+  for(let i=1;i<first;i++) h+=`<div class="cd emp"></div>`;
+  const dim = new Date(yr,mo+1,0).getDate();
+  for(let d=1;d<=dim;d++){
+    const dd=String(d).padStart(2,'0'), mm=String(mo+1).padStart(2,'0');
+    const ds=`${dd}.${mm}.${yr}`;
+    const isSel=ds===sel, isToday=ds===today;
+    const cls=['cd',isSel?'sel':isToday?'today':''].filter(Boolean).join(' ');
+    h+=`<div class="cd-wrap"><button class="${cls}" onclick="pickCalDay('${ds}')">${d}</button></div>`;
+  }
+  document.getElementById('calGrid').innerHTML = h;
+}
+function pickCalDay(ds){
+  document.getElementById('calModal').classList.remove('open');
+  const parts = ds.split('.');
+  currentDate = new Date(+parts[2], +parts[1]-1, +parts[0]);
+  initState();
+  loadSheetAndRender();
+}
+
+// ── UTILS ─────────────────────────────────────────
+function serialToDate(raw){
+  if(raw===null||raw===undefined||raw==='')return'';
+  var s=String(raw).trim();
+  if(/^\d{2}\.\d{2}\.\d{4}$/.test(s))return s;
+  if(/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)){
+    var p=s.split('.');
+    return p[0].padStart(2,'0')+'.'+p[1].padStart(2,'0')+'.'+p[2];
+  }
+  if(s.indexOf(' - ')>=0)return serialToDate(s.split(' - ')[0].trim());
+  if(s.indexOf(' – ')>=0)return serialToDate(s.split(' – ')[0].trim());
+  var n=parseInt(s);
+  if(!isNaN(n)&&n>40000&&n<60000){
+    var dt=new Date((n-25569)*86400*1000);
+    return String(dt.getUTCDate()).padStart(2,'0')+'.'+String(dt.getUTCMonth()+1).padStart(2,'0')+'.'+dt.getUTCFullYear();
+  }
+  var dt2=new Date(s);
+  if(!isNaN(dt2.getTime()))return String(dt2.getDate()).padStart(2,'0')+'.'+String(dt2.getMonth()+1).padStart(2,'0')+'.'+dt2.getFullYear();
+  return s;
+}
+function colLetter(idx){
+  // Convert 0-based column index to letter(s): 0=A, 25=Z, 26=AA
+  let s = '';
+  idx += 1;
+  while(idx > 0){
+    const r = (idx-1) % 26;
+    s = String.fromCharCode(65+r) + s;
+    idx = Math.floor((idx-1)/26);
+  }
+  return s;
+}
+
+function showLoading(txt){
+  g('loadingText').textContent = txt || 'Загрузка...';
+  g('loadingOverlay').classList.remove('hidden');
+}
+function hideLoading(){ g('loadingOverlay').classList.add('hidden'); }
+
+function showToast(msg, type=''){
+  const t = g('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function g(id){ return document.getElementById(id); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fv(v){
+  const n = parseFloat(String(v||0).replace(',','.'));
+  return isNaN(n) ? '0,00' : n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+</script>
+</body>
+</html>
